@@ -1,5 +1,5 @@
 
-import { User } from "../../model/user.model.js";
+import { User } from "../model/user.model.js";
 
  const generatetoken=async(_id)=>{
     try {
