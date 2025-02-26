@@ -1,6 +1,10 @@
 
 import { User } from "../model/user.model.js";
+import Email from "../utils/Email.js"
 
+function generateOTP() {
+    return Math.floor(1000 + Math.random() * 9000);
+  }
  const generatetoken=async(_id)=>{
     try {
         const user=await User.findById(_id);
@@ -10,7 +14,7 @@ import { User } from "../model/user.model.js";
         await user.save();
         return {accessToken,refreshToken};
     } catch (error) {
-        //console.log("Error in Creating the Tokens" ,error);
+        console.log("Error in Creating the Tokens" ,error);
         throw new Error("Error in Creating the Tokens");
         
     }
@@ -26,17 +30,23 @@ const RegisterUser=async(req,res)=>{
     if(check){
         return res.json("User us presnet this email or username")
     }
+    const otp=generateOTP()
     
     const user=await User.create({
-        name ,email, username: username.toLowerCase() ,password ,isCodeverifed:1234
+        name ,email, username: username.toLowerCase() ,password ,isCodeverifed:otp
     })
+
+    await Email(otp)
+
+    // if(mailsend)
 
     const checkuser=await User.findById(user._id).select("-passowrd -refreshToken");
 
     if(!checkuser){
         return res.json("Some Error while Creating the User")
     }
-
+    //console.log(checkuser);
+    
     const {accessToken,refreshToken} = await generatetoken(checkuser._id);
     const options = {
         httpOnly: true,
@@ -60,6 +70,10 @@ const VerifyUser =async (req,res)=>{
         return res.status(404).json("The User not present")
     }
     //console.log(user);
+
+    if(user.isverified){
+        return res.status(200).json("The User is Already Verified")
+    }
     
     if(user.isCodeverifed==otp){
         user.isverified=true;
@@ -140,4 +154,20 @@ const LogoutUser=async(req,res)=>{
         .json(200, {}, "User logged Out");
 }
 
-export {RegisterUser,VerifyUser,LoginUser,CurrentUser,LogoutUser}
+const ResendOtp=async(req,res)=>{
+    const {email} =req.user
+    
+    const user=await User.findOne({email})
+
+    if(user.isverified){
+        return res.status(200).json("The OTP IS Alredy VEREFIED")
+    }
+    const otp=generateOTP()
+    await Email(otp)
+        user.isCodeverifed=otp
+        await user.save()
+        return res.status(200).json(`${otp}The OTP IS RESEND SUCCESFULLY`)
+
+}
+
+export {RegisterUser,VerifyUser,LoginUser,CurrentUser,LogoutUser,ResendOtp}
