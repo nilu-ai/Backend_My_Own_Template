@@ -37,7 +37,7 @@ const RegisterUser=async(req,res)=>{
             name ,email, username: username.toLowerCase() ,password ,isCodeverifed:otp
         })
     
-        await Email(otp)
+        await Email(otp,email)
     
         // if(mailsend)
     
@@ -51,9 +51,8 @@ const RegisterUser=async(req,res)=>{
         const {accessToken,refreshToken} = await generatetoken(checkuser._id);
         const options = {
             httpOnly: true,
-            secure: false,
-            sameSite: "None", 
-           
+            secure: false, 
+            sameSite: "Lax",
         };
         return res.status(200)
             .cookie("accessToken", accessToken, options)
@@ -124,8 +123,8 @@ const LoginUser=async(req,res)=>{
         const checkuser=await User.findById(loguser._id).select("-password -refreshToken")
         const options = {
             httpOnly: true,
-            secure: false, // Set to false if not using HTTPSl
-            sameSite: "Lax", // Adjust sameSite attribute
+            secure: false, 
+            sameSite: "Lax",
         };
       
         return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json({checkuser})
@@ -204,7 +203,7 @@ const ResendOtp=async(req,res)=>{
           throw new Error("The OTP IS Alredy VEREFIED")
       }
       const otp=generateOTP()
-      await Email(otp)
+      await Email(otp,email)
           user.isCodeverifed=otp
           await user.save()
           return res.status(200).json(`${otp}The OTP IS RESEND SUCCESFULLY`)
@@ -218,4 +217,17 @@ const ResendOtp=async(req,res)=>{
   }
 }
 
-export {RegisterUser,VerifyUser,LoginUser,CurrentUser,LogoutUser,ResendOtp}
+const DeleteUser = async (req, res) => {
+    try {
+        await User.deleteMany({});
+        return res.status(200).json({ message: "All users have been deleted successfully" });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+}
+
+export {RegisterUser,VerifyUser,LoginUser,CurrentUser,LogoutUser,ResendOtp,DeleteUser}
