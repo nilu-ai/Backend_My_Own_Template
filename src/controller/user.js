@@ -237,7 +237,7 @@ const GoogleAuth = async (req, res) => {
     try {
         const { email } = req.body;
     
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email }).select("-passowrd -refreshToken");
     
         if (!user) {
             throw new ApiError(404, "User not found. Please sign up first.");
@@ -250,8 +250,8 @@ const GoogleAuth = async (req, res) => {
           _id: user._id,
           email: user.email,
           username: user.username,
-          accessToken,
-          refreshToken,
+        name: user.name,
+          isverified:user.isverified
         });
       } catch (error) {
         res.status(error.statusCode || 500).json({ success: false, message: "Server error", error: error.message });
