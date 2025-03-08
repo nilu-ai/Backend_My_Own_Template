@@ -28,6 +28,12 @@ const userSchema=new mongoose.Schema({
     },
     isCodeverifed:{
         type:Number
+    },
+    
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user'
     }
 
 

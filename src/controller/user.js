@@ -70,6 +70,7 @@ const RegisterUser=async(req,res)=>{
 }
 
 const VerifyUser =async (req,res)=>{
+    
     try {
         const {otp}=req.body;
         const {email,username}=req.user;
@@ -103,6 +104,7 @@ const VerifyUser =async (req,res)=>{
 
 
 const LoginUser=async(req,res)=>{
+    console.log("request")
     try {
         const {email ,password}=req.body;
     
@@ -229,5 +231,28 @@ const DeleteUser = async (req, res) => {
         });
     }
 }
-
-export {RegisterUser,VerifyUser,LoginUser,CurrentUser,LogoutUser,ResendOtp,DeleteUser}
+const GoogleAuth = async (req, res) => {
+    try {
+        const { email } = req.body;
+    
+        let user = await User.findOne({ email });
+    
+        if (!user) {
+          return res.status(404).json({ message: "User not found. Please sign up first." });
+        }
+    
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+    
+        res.status(200).json({
+          _id: user._id,
+          email: user.email,
+          username: user.username,
+          accessToken,
+          refreshToken,
+        });
+      } catch (error) {
+        res.status(500).json({ success: false, message: "Server error", error: error.message });
+      }
+}
+export {GoogleAuth,RegisterUser,VerifyUser,LoginUser,CurrentUser,LogoutUser,ResendOtp,DeleteUser}
