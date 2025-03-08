@@ -251,7 +251,8 @@ const GoogleAuth = async (req, res) => {
           email: user.email,
           username: user.username,
         name: user.name,
-          isverified:user.isverified
+          isverified:user.isverified,
+          accessToken
         });
       } catch (error) {
         res.status(error.statusCode || 500).json({ success: false, message: "Server error", error: error.message });
