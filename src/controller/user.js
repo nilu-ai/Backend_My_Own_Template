@@ -123,6 +123,7 @@ const LoginUser=async(req,res)=>{
     
         const {accessToken,refreshToken} =await generatetoken(loguser._id);
         const checkuser=await User.findById(loguser._id).select("-password -refreshToken")
+        checkuser.accessToken=accessToken;
         const options = {
             httpOnly: true,
             secure: false, 
