@@ -1,7 +1,7 @@
 
 import { User } from "../model/user.model.js";
 import Email from "../utils/Email.js"
-
+import ApiError from "../utils/ApiError.js"
 function generateOTP() {
     return Math.floor(1000 + Math.random() * 9000);
   }
@@ -15,7 +15,7 @@ function generateOTP() {
         return {accessToken,refreshToken};
     } catch (error) {
         console.log("Error in Creating the Tokens" ,error);
-        throw new Error("Error in Creating the Tokens");
+        throw new ApiError(500,"Error in Creating the Tokens");
         
     }
 }
@@ -24,12 +24,12 @@ const RegisterUser=async(req,res)=>{
         const {name ,email,username ,password}=req.body;
     
         if(!name | !email |!username | !password){
-            throw new Error("All the Filed should be Required")
+            throw new ApiError(400,"All the Filed should be Required")
         }
     
         const check=await User.findOne({$or :[{email},{username}]})
         if(check){
-            throw new Error("User us presnet this email or username")
+            throw new ApiError(409,"User us presnet this email or username")
         }
         const otp=generateOTP()
         
@@ -44,7 +44,7 @@ const RegisterUser=async(req,res)=>{
         const checkuser=await User.findById(user._id).select("-passowrd -refreshToken");
     
         if(!checkuser){
-            throw new Error("Some Error while Creating the User")
+            throw new ApiError(500,"Some Error while Creating the User")
         }
         //console.log(checkuser);
         
@@ -59,10 +59,10 @@ const RegisterUser=async(req,res)=>{
             .cookie("refreshToken", refreshToken, options)
             .json({ checkuser });
     } catch (error) {
-        res.status(500).json({
+        res.status(error.statusCode || 500).json({
             sucess:false,
-            message:"Inter Server Error",
-            error:error.message
+            message:error.message || "Inter Server Error"
+        
         })
     }
 
@@ -76,12 +76,12 @@ const VerifyUser =async (req,res)=>{
         const {email,username}=req.user;
         const user = await User.findOne({ $or: [{ email:email }, { username: username }] });
         if(!user){
-            throw new Error("The User not present")
+            throw new ApiError(404,"The User not present")
         }
         //console.log(user);
     
         if(user.isverified){
-            throw new Error("The User is Already Verified")
+            throw new ApiError(400,"The User is Already Verified")
         }
         
         if(user.isCodeverifed==otp){
@@ -93,10 +93,10 @@ const VerifyUser =async (req,res)=>{
         return res.status(401).json("Otp Not verified Succesfully")
     
     } catch (error) {
-        res.status(500).json({
+        res.status(error.statusCode || 500).json({
             sucess:false,
-            message:"Inter Server Error",
-            error:error.message
+            message:error.message || "Inter Server Error"
+           
         })
     }
     
@@ -108,17 +108,17 @@ const LoginUser=async(req,res)=>{
     try {
         const {email ,password}=req.body;
     
-        if(!email | !password ){throw new Error("All Filed Required")}
+        if(!email | !password ){throw new ApiError(400,"All Filed Required")}
     
         const loguser= await User.findOne({$or:[{email},{username:email}]}).select(" -refreshToken")
-        if(!loguser) {throw new Error("The User Is not Present")}
+        if(!loguser) {throw new ApiError(404,"The User Is not Present")}
     
         //console.log(loguser);
         
         const check=await loguser.isPasswordCorrect(password);
     
         if(!check){
-            throw new Error("The Password is Wrong")
+            throw new ApiError("The Password is Wrong")
         }
     
         const {accessToken,refreshToken} =await generatetoken(loguser._id);
@@ -133,10 +133,12 @@ const LoginUser=async(req,res)=>{
     
     
     } catch (error) {
-        res.status(500).json({
+        console.log(error);
+        
+        res.status(error.statusCode || 500).json({
             sucess:false,
-            message:"Inter Server Error",
-            error:error.message
+            message:error.message || "Inter Server Error"
+           
         })
     }
 
@@ -153,10 +155,10 @@ const CurrentUser=async(req,res)=>{
        };
      return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json({checkuser})
    } catch (error) {
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
         sucess:false,
-        message:"Inter Server Error",
-        error:error.message
+        message:error.message || "Inter Server Error"
+       
     })
    }
 }
@@ -187,10 +189,10 @@ const LogoutUser=async(req,res)=>{
            .clearCookie("refreshToken", options)
            .json(200, {}, "User logged Out");
  } catch (error) {
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
         sucess:false,
-        message:"Inter Server Error",
-        error:error.message
+        message:error.message || "Inter Server Error"
+       
     })
  }
 }
@@ -202,7 +204,7 @@ const ResendOtp=async(req,res)=>{
       const user=await User.findOne({email})
   
       if(user.isverified){
-          throw new Error("The OTP IS Alredy VEREFIED")
+          throw new ApiError(400,"The OTP IS Alredy VEREFIED")
       }
       const otp=generateOTP()
       await Email(otp,email)
@@ -211,10 +213,10 @@ const ResendOtp=async(req,res)=>{
           return res.status(200).json(`${otp}The OTP IS RESEND SUCCESFULLY`)
   
   } catch (error) {
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
         sucess:false,
-        message:"Inter Server Error",
-        error:error.message
+        message:error.message || "Inter Server Error"
+       
     })
   }
 }
@@ -224,7 +226,7 @@ const DeleteUser = async (req, res) => {
         await User.deleteMany({});
         return res.status(200).json({ message: "All users have been deleted successfully" });
     } catch (error) {
-        res.status(500).json({
+        res.status(error.statusCode || 500).json({
             success: false,
             message: "Internal Server Error",
             error: error.message
@@ -238,7 +240,7 @@ const GoogleAuth = async (req, res) => {
         let user = await User.findOne({ email });
     
         if (!user) {
-          return res.status(404).json({ message: "User not found. Please sign up first." });
+            throw new ApiError(404, "User not found. Please sign up first.");
         }
     
         const accessToken = user.generateAccessToken();
@@ -252,7 +254,7 @@ const GoogleAuth = async (req, res) => {
           refreshToken,
         });
       } catch (error) {
-        res.status(500).json({ success: false, message: "Server error", error: error.message });
+        res.status(error.statusCode || 500).json({ success: false, message: "Server error", error: error.message });
       }
 }
 export {GoogleAuth,RegisterUser,VerifyUser,LoginUser,CurrentUser,LogoutUser,ResendOtp,DeleteUser}
