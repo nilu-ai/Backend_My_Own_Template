@@ -118,7 +118,7 @@ const LoginUser=async(req,res)=>{
         const check=await loguser.isPasswordCorrect(password);
     
         if(!check){
-            throw new ApiError("The Password is Wrong")
+            throw new ApiError(401,"The Password is Wrong")
         }
     
         const {accessToken,refreshToken} =await generatetoken(loguser._id);
@@ -164,6 +164,8 @@ const CurrentUser=async(req,res)=>{
 }
 
 const LogoutUser=async(req,res)=>{
+    console.log("coming");
+    
  try {
        await User.findByIdAndUpdate(
            req.user._id,
