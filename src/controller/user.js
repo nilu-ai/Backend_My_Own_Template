@@ -14,7 +14,7 @@ function generateOTP() {
         await user.save();
         return {accessToken,refreshToken};
     } catch (error) {
-        console.log("Error in Creating the Tokens" ,error);
+        //console.log("Error in Creating the Tokens" ,error);
         throw new ApiError(500,"Error in Creating the Tokens");
         
     }
@@ -104,7 +104,7 @@ const VerifyUser =async (req,res)=>{
 
 
 const LoginUser=async(req,res)=>{
-    console.log("request")
+    //console.log("request")
     try {
         const {email ,password}=req.body;
     
@@ -123,18 +123,16 @@ const LoginUser=async(req,res)=>{
     
         const {accessToken,refreshToken} =await generatetoken(loguser._id);
         const checkuser=await User.findById(loguser._id).select("-password -refreshToken")
-        checkuser.accessToken=accessToken;
         const options = {
             httpOnly: true,
             secure: false, 
             sameSite: "Lax",
         };
-      
-        return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json({checkuser})
+        return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json({checkuser:{_id:checkuser._id,email:checkuser.email,name:checkuser.name,username:checkuser.username,isverified:checkuser.isverified,accessToken:accessToken}})
     
     
     } catch (error) {
-        console.log(error);
+        //console.log(error);
         
         res.status(error.statusCode || 500).json({
             sucess:false,
@@ -165,7 +163,7 @@ const CurrentUser=async(req,res)=>{
 }
 
 const LogoutUser=async(req,res)=>{
-    console.log("coming");
+   // console.log("coming");
     
  try {
        await User.findByIdAndUpdate(
