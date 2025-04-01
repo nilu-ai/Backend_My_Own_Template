@@ -328,7 +328,7 @@ const VerifyUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "The user is not authorized");
   }
 
-  const user = await User.findById(_id).select("-password -refreshToken -isCode -sub");
+  const user = await User.findById(_id).select("-password -refreshToken -sub");
 
   if (!user) {
     throw new ApiError(404, "The USer not present");
