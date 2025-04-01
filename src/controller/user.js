@@ -386,13 +386,15 @@ const ResendOtp = asyncHandler(async (req, res) => {
   user.isCode = otpcode;
   user.save();
 
-  const subject = "Your Account Has Been Successfully Verified!";
+  const subject = "Resend OTP for Your Account Verification";
   const message = `
         Hi ${user.fullName},
         
-        Congratulations! Your account has been successfully verified. You can now enjoy full access to our platform and its features.
+        We noticed you requested a new OTP for verifying your account. Please use the following OTP to complete your verification process:
         
-        If you have any questions or need assistance, feel free to reach out to our support team.
+        OTP: ${otpcode}
+        
+        If you did not request this, please ignore this email or contact our support team.
         
         Best regards,
         ${process.env.CORS} Team
