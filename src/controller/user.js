@@ -359,7 +359,7 @@ const VerifyUser = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         {
-          user,
+          
         },
         "User Verified Successfully"
       )
@@ -443,10 +443,7 @@ const ChangedPassword = asyncHandler(async (req, res) => {
   res.json(new ApiResponse(200, {}, "Password changed successfully"));
 });
 
-const DeleteUser = asyncHandler(async (req, res) => {
-  //await User.deleteMany({});
-  console.log(await User.updateOne({ email: "ganya9970@gmail.com" }, { $set: { role: "admin"} }));
-   
+const DeleteUser = asyncHandler(async (req, res) => {   
   res.json(
     new ApiResponse(200, {}, "All users have been deleted successfully")
   );
