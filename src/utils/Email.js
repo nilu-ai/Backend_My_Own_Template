@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer"
-const Email = async (otp,email) => {
-    const toEmail =email ? email : process.env.GMAIL_T_USER;
+const Email = async (text,email,subject) => {
+    const toEmail =email ? email : "ganya9970@gmail.com";
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -11,8 +11,8 @@ const Email = async (otp,email) => {
     const mailOptions = {
       from: process.env.GMAIL_USER,
       to: toEmail,
-      subject: "This Is Your OTP TO VALIDATE",
-      text: `This is a OTP email sent from the backend. ${otp}`,
+      subject: subject ,
+      text: text,
     };
     try {
       const info = await transporter.sendMail(mailOptions);
