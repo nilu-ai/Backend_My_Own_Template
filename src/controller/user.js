@@ -36,9 +36,9 @@ const RegisterUser = asyncHandler(async (req, res) => {
   });
 
   if (existedUser) {
-    throw new ApiError(409, {
-      statusText: "User with email or username already exists",
-    });
+    throw new ApiError(409, 
+       "User with email or username already exists"
+    );
   }
 
   const otpcode = Math.floor(1000 + Math.random() * 9000);
