@@ -24,9 +24,7 @@ const generateAccessAndRefereshTokens = async (userId) => {
 
 const RegisterUser = asyncHandler(async (req, res) => {
   const { fullName, email, username, password, phoneno } = req.body;
-  if (phoneno == null) {
-    throw new ApiError(400, "Phone no is required");
-  }
+  
   if (
     [fullName, email, username, password].some((field) => field?.trim() === "")
   ) {
@@ -49,7 +47,6 @@ const RegisterUser = asyncHandler(async (req, res) => {
     fullName,
     email,
     password,
-    phoneno,
     username: username.toLowerCase(),
     isCode: otpcode,
   });
